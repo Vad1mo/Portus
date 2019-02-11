@@ -1,5 +1,16 @@
-FROM opensuse/ruby:2.6
+FROM opensuse/amd64:42.3
 MAINTAINER SUSE Containers Team <containers@suse.com>
+
+COPY rpm-import-repo-key /
+
+RUN chmod +x /rpm-import-repo-key && \
+    sync && /rpm-import-repo-key A9EA39C49B6B9E93B6863F849AF0C9A20E9AF123 && \
+    zypper ar -f obs://devel:languages:ruby/openSUSE_Leap_42.3 ruby && \
+    zypper -n in --no-recommends ruby2.6 ruby2.6-rubygem-gem2rpm && \
+    zypper clean -a && \
+    rm /rpm-import-repo-key && \
+    update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby.ruby2.6 1 && \
+    update-alternatives --install /usr/bin/gem gem /usr/bin/gem.ruby2.6 1
 
 ENV COMPOSE=1
 EXPOSE 3000
@@ -21,9 +32,9 @@ RUN zypper addrepo https://download.opensuse.org/repositories/devel:languages:go
            nodejs libxml2-devel libxslt1 git-core \
            go1.10 phantomjs gcc-c++ && \
     zypper -n in --no-recommends -t pattern devel_basis && \
-    gem install bundler --no-ri --no-rdoc -v 1.17.3 && \
-    update-alternatives --install /usr/bin/bundle bundle /usr/bin/bundle.ruby2.6.1 && \
-    update-alternatives --install /usr/bin/bundler bundler /usr/bin/bundler.ruby2.6.1 && \
+    gem install bundler -v 1.17.3 && \
+    update-alternatives --install /usr/bin/bundle bundle /usr/bin/bundle.ruby2.6 1 && \
+    update-alternatives --install /usr/bin/bundler bundler /usr/bin/bundler.ruby2.6 1 && \
     bundle install --retry=3 && \
     go get -u github.com/vbatts/git-validation && \
     go get -u github.com/openSUSE/portusctl && \
